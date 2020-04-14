@@ -43,11 +43,9 @@ def parse_data(data):
         df_split[col] = df_split[col].astype(float)
         df_split[col] = df_split[col].astype(pd.Int64Dtype())
 
-    df_split.measurement_time_UTC = pd.to_datetime(df_split.measurement_time_UTC)
-    df_split = df_split.sort_values(by="measurement_time_UTC")
     df_split = df_split.drop_duplicates().copy()
 
-    return df_split.to_json()
+    return df_split.to_json(orient="index")
 
 
 def main(req: func.HttpRequest, healthpebble: func.Out[str]) -> func.HttpResponse:
@@ -82,17 +80,20 @@ def main(req: func.HttpRequest, healthpebble: func.Out[str]) -> func.HttpRespons
 
     try:
         logging.info("Writing to healthpebble table")
-        rowKey = str(uuid.uuid4())
         timestamp = str(datetime.datetime.utcnow())
-        row = {
-            "Name": "Output binding message",
-            "RowKey": rowKey,
-            "timestamp": timestamp,
-        }
         data_dic = eval(data)
+        rows = []
         for k in data_dic.keys():
-            row[k] = data_dic[k]
-        healthpebble.set(json.dumps(row))
+            rowKey = str(uuid.uuid4())
+            row = {
+                "Name": "Output binding message",
+                "RowKey": rowKey,
+                "timestamp": timestamp,
+            }
+            for kk in data_dic[k].keys():
+                row[kk] = data_dic[k][kk]
+            rows.append(row)
+        healthpebble.set(json.dumps(rows))
     except:
         logging.error("Write to table failed")
 
