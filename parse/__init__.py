@@ -1,6 +1,9 @@
 import logging
 import azure.functions as func
 import pandas as pd
+import uuid
+import json
+import datetime
 
 
 # example data "2020-04-11T03:11:00Z,0,13,7,0,1,0,0"
@@ -47,7 +50,7 @@ def parse_data(data):
     return df_split.to_json()
 
 
-def main(req: func.HttpRequest) -> func.HttpResponse:
+def main(req: func.HttpRequest, healthpebble: func.Out[str]) -> func.HttpResponse:
     logging.info("Python HTTP trigger function processed a request.")
 
     name = req.params.get("name")
@@ -76,6 +79,22 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     except:
         logging.error("Parsing of data has not succeded.")
         data = data
+
+    try:
+        logging.info("Writing to healthpebble table")
+        rowKey = str(uuid.uuid4())
+        timestamp = str(datetime.datetime.utcnow())
+        row = {
+            "Name": "Output binding message",
+            "RowKey": rowKey,
+            "timestamp": timestamp,
+        }
+        data_dic = eval(data)
+        for k in data_dic.keys():
+            row[k] = data_dic[k]
+        healthpebble.set(json.dumps(row))
+    except:
+        logging.error("Write to table failed")
 
     if name:
         return func.HttpResponse(f"Hello {name}! This is your data: {data}")

@@ -15,6 +15,14 @@
       "type": "http",
       "direction": "out",
       "name": "$return"
+    },
+    {
+      "type": "table",
+      "direction": "out",
+      "name": "healthpebble",
+      "partitionkey": "healthpebble",
+      "tableName": "healthpebble",
+      "connection": "healthpebble_STORAGE"
     }
   ]
 }
