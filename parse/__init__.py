@@ -7,8 +7,6 @@ import datetime
 import traceback
 
 
-# example data "2020-04-11T03:11:00Z,0,13,7,0,1,0,0"
-# example data "2020-04-11T03:11:00Z,0,13,7,0,1,0,0\n2020-04-11T03:43:00Z,0,0,4,1423,1,0,0"
 def parse_data(data):
     columns = [
         "measurement_time_UTC",
@@ -51,15 +49,6 @@ def parse_data(data):
 
 def main(req: func.HttpRequest, healthpebble: func.Out[str]) -> func.HttpResponse:
     logging.info("Python HTTP trigger function processed a request.")
-
-    # name = req.params.get("name")
-    # if not name:
-    #     try:
-    #         req_body = req.get_json()
-    #     except ValueError:
-    #         pass
-    #     else:
-    #         name = req_body.get("name")
 
     try:
         data = req.params.get("data")
@@ -124,13 +113,3 @@ def main(req: func.HttpRequest, healthpebble: func.Out[str]) -> func.HttpRespons
         err_str = traceback.format_exc()
         logging.info(f"Write to table failed: {err_str}")
         return func.HttpResponse(f"Error: {err_str}", status_code=400,)
-
-    # if name:
-    #     return func.HttpResponse(f"Hello {name}! This is your data: {data}")
-    # else:
-    #     err_str = traceback.format_exc()
-    #     return func.HttpResponse(
-    #         f"Error: {err_str}",
-    #         # "Please pass a name on the query string or in the request body",
-    #         status_code=400,
-    #     )
