@@ -4,6 +4,7 @@ import pandas as pd
 import uuid
 import json
 import datetime
+import traceback
 
 
 # example data "2020-04-11T03:11:00Z,0,13,7,0,1,0,0"
@@ -60,7 +61,18 @@ def main(req: func.HttpRequest, healthpebble: func.Out[str]) -> func.HttpRespons
         else:
             name = req_body.get("name")
 
-    data = req.params.get("data")
+    try:
+        data = req.params.get("data")
+    except:
+        logging.info("params get does not work")
+    try:
+        data = req.values.get("data")
+    except:
+        logging.info("values get does not work")
+    try:
+        data = req.form.get("data")
+    except:
+        logging.info("form get does not work")
     if not data:
         try:
             req_body = req.get_json()
@@ -70,13 +82,21 @@ def main(req: func.HttpRequest, healthpebble: func.Out[str]) -> func.HttpRespons
             data = req_body.get("data")
     if not data:
         data = "empty"
+    logging.info(f"data: {data}")
+
+    try:
+        logging.info(f"eval(data): {eval(data)}")
+    except:
+        err_str = traceback.format_exc()
+        logging.info(f"eval(data) not succeded: {err_str}")
 
     logging.info("Parsing data.")
     try:
         data = parse_data(data)
+        logging.info(f"parsed data: {data}")
     except:
-        logging.error("Parsing of data has not succeded.")
-        data = data
+        err_str = traceback.format_exc()
+        logging.info(f"Parsing of data has not succeded: {err_str}")
 
     try:
         logging.info("Writing to healthpebble table")
@@ -95,12 +115,15 @@ def main(req: func.HttpRequest, healthpebble: func.Out[str]) -> func.HttpRespons
             rows.append(row)
         healthpebble.set(json.dumps(rows))
     except:
-        logging.error("Write to table failed")
+        err_str = traceback.format_exc()
+        logging.info(f"Write to table failed: {err_str}")
 
     if name:
         return func.HttpResponse(f"Hello {name}! This is your data: {data}")
     else:
+        err_str = traceback.format_exc()
         return func.HttpResponse(
-            "Please pass a name on the query string or in the request body",
+            f"Error: {err_str}",
+            # "Please pass a name on the query string or in the request body",
             status_code=400,
         )
