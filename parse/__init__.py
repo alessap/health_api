@@ -73,13 +73,6 @@ def main(req: func.HttpRequest, healthpebbleraw: func.Out[str]) -> func.HttpResp
         data = "empty"
     logging.info(f"data: {data}")
 
-    try:
-        logging.info(f"eval(data): {eval(data)}")
-    except:
-        err_str = traceback.format_exc()
-        logging.info(f"eval(data) not succeded: {err_str}")
-        return func.HttpResponse(f"Error: {err_str}", status_code=400,)
-
     logging.info("Parsing data.")
     try:
         data = parse_data(data)
