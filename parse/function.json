@@ -19,9 +19,9 @@
     {
       "type": "table",
       "direction": "out",
-      "name": "healthpebble",
-      "partitionkey": "healthpebble",
-      "tableName": "healthpebble",
+      "name": "healthpebbleraw",
+      "partitionkey": "healthpebbleraw",
+      "tableName": "healthpebbleraw",
       "connection": "healthpebble_STORAGE"
     }
   ]

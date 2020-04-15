@@ -47,7 +47,7 @@ def parse_data(data):
     return df_split.to_json(orient="index")
 
 
-def main(req: func.HttpRequest, healthpebble: func.Out[str]) -> func.HttpResponse:
+def main(req: func.HttpRequest, healthpebbleraw: func.Out[str]) -> func.HttpResponse:
     logging.info("Python HTTP trigger function processed a request.")
 
     try:
@@ -73,13 +73,6 @@ def main(req: func.HttpRequest, healthpebble: func.Out[str]) -> func.HttpRespons
         data = "empty"
     logging.info(f"data: {data}")
 
-    try:
-        logging.info(f"eval(data): {eval(data)}")
-    except:
-        err_str = traceback.format_exc()
-        logging.info(f"eval(data) not succeded: {err_str}")
-        return func.HttpResponse(f"Error: {err_str}", status_code=400,)
-
     logging.info("Parsing data.")
     try:
         data = parse_data(data)
@@ -90,7 +83,7 @@ def main(req: func.HttpRequest, healthpebble: func.Out[str]) -> func.HttpRespons
         return func.HttpResponse(f"Error: {err_str}", status_code=400,)
 
     try:
-        logging.info("Writing to healthpebble table")
+        logging.info("Writing to healthpebbleraw table")
         timestamp = str(datetime.datetime.utcnow())
         data_dic = eval(data)
         rows = []
@@ -104,7 +97,7 @@ def main(req: func.HttpRequest, healthpebble: func.Out[str]) -> func.HttpRespons
             for kk in data_dic[k].keys():
                 row[kk] = data_dic[k][kk]
             rows.append(row)
-        healthpebble.set(json.dumps(rows))
+        healthpebbleraw.set(json.dumps(rows))
         return func.HttpResponse(
             f"Data from Pebble succesfully parsed and written to table.",
             status_code=200,
