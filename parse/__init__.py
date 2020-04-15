@@ -52,14 +52,14 @@ def parse_data(data):
 def main(req: func.HttpRequest, healthpebble: func.Out[str]) -> func.HttpResponse:
     logging.info("Python HTTP trigger function processed a request.")
 
-    name = req.params.get("name")
-    if not name:
-        try:
-            req_body = req.get_json()
-        except ValueError:
-            pass
-        else:
-            name = req_body.get("name")
+    # name = req.params.get("name")
+    # if not name:
+    #     try:
+    #         req_body = req.get_json()
+    #     except ValueError:
+    #         pass
+    #     else:
+    #         name = req_body.get("name")
 
     try:
         data = req.params.get("data")
@@ -89,6 +89,7 @@ def main(req: func.HttpRequest, healthpebble: func.Out[str]) -> func.HttpRespons
     except:
         err_str = traceback.format_exc()
         logging.info(f"eval(data) not succeded: {err_str}")
+        return func.HttpResponse(f"Error: {err_str}", status_code=400,)
 
     logging.info("Parsing data.")
     try:
@@ -97,6 +98,7 @@ def main(req: func.HttpRequest, healthpebble: func.Out[str]) -> func.HttpRespons
     except:
         err_str = traceback.format_exc()
         logging.info(f"Parsing of data has not succeded: {err_str}")
+        return func.HttpResponse(f"Error: {err_str}", status_code=400,)
 
     try:
         logging.info("Writing to healthpebble table")
@@ -114,16 +116,21 @@ def main(req: func.HttpRequest, healthpebble: func.Out[str]) -> func.HttpRespons
                 row[kk] = data_dic[k][kk]
             rows.append(row)
         healthpebble.set(json.dumps(rows))
+        return func.HttpResponse(
+            f"Data from Pebble succesfully parsed and written to table.",
+            status_code=200,
+        )
     except:
         err_str = traceback.format_exc()
         logging.info(f"Write to table failed: {err_str}")
+        return func.HttpResponse(f"Error: {err_str}", status_code=400,)
 
-    if name:
-        return func.HttpResponse(f"Hello {name}! This is your data: {data}")
-    else:
-        err_str = traceback.format_exc()
-        return func.HttpResponse(
-            f"Error: {err_str}",
-            # "Please pass a name on the query string or in the request body",
-            status_code=400,
-        )
+    # if name:
+    #     return func.HttpResponse(f"Hello {name}! This is your data: {data}")
+    # else:
+    #     err_str = traceback.format_exc()
+    #     return func.HttpResponse(
+    #         f"Error: {err_str}",
+    #         # "Please pass a name on the query string or in the request body",
+    #         status_code=400,
+    #     )
